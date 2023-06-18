@@ -1,0 +1,104 @@
+plugins {
+    id 'eclipse'
+    id 'idea'
+    id 'java'
+}
+
+allprojects {
+    repositories {
+        // 这部分看你需要，需要就加不需要就删
+        mavenCentral()
+        maven {
+            // location of the maven that hosts JEI files before January 2023
+            name = "Progwml6's maven"
+            url = "https://dvs1.progwml6.com/files/maven/"
+        }
+        maven {
+            // location of the maven that hosts JEI files since January 2023
+            name = "Jared's maven"
+            url = "https://maven.blamejared.com/"
+        }
+        maven {
+            // location of a maven mirror for JEI files, as a fallback
+            name = "ModMaven"
+            url = "https://modmaven.dev"
+        }
+        maven {
+            url = "https://www.cursemaven.com"
+        }
+        maven {
+            url = "https://maven.terraformersmc.com"
+        }
+        maven {
+            url "https://maven.shedaniel.me/"
+        }
+    }
+
+    def all_properties = [
+            minecraft_version   : minecraft_version,
+            mod_id              : mod_id,
+            mod_name            : mod_name,
+            mod_version         : mod_version,
+            fabric_version      : fabric_version,
+            yarn_mappings       : yarn_mappings,
+            loader_version      : loader_version,
+            forge_version       : forge_version,
+            loader_version_range: loader_version_range,
+            mapping_channel     : mapping_channel,
+            mapping_version     : mapping_version
+    ]
+
+    tasks.withType(ProcessResources).configureEach {
+        inputs.properties all_properties
+
+        filesMatching(['META-INF/mods.toml', 'fabric.mod.json', 'pack.mcmeta']) {
+            expand all_properties
+        }
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    }
+
+    tasks.register('feedbackClass', Copy) {
+        dependsOn "jar"
+        mustRunAfter ":forge:reobfJar"
+        mustRunAfter ":fabric:remapJar"
+        from (zipTree(new File(buildDir, "libs/${project.name}.jar"))) {
+            include '**/*.class'
+        }
+        into new File(rootProject.buildDir, 'classes/java/main')
+    }
+
+    tasks.register('feedbackResource', Copy) {
+        dependsOn "jar"
+        mustRunAfter ":forge:reobfJar"
+        mustRunAfter ":fabric:remapJar"
+        from (zipTree(new File(buildDir, "libs/${project.name}.jar"))) {
+            exclude '**/*.class'
+        }
+        into new File(rootProject.buildDir, 'resources/main')
+    }
+
+    tasks.register('feedback') {
+        dependsOn("feedbackClass")
+        dependsOn("feedbackResource")
+    }
+}
+
+project.jar {
+    dependsOn ':common:feedback'
+    dependsOn ':forge:feedback'
+    dependsOn ':fabric:feedback'
+    manifest {
+        attributes([
+                "Specification-Title"     : mod_id,
+                "Specification-Vendor"    : author,
+                "Specification-Version"   : "1", // We are version 1 of ourselves
+                "Implementation-Title"    : rootProject.name,
+                "Implementation-Version"  : mod_version,
+                "Implementation-Vendor"   : author,
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
+        ])
+    }
+}

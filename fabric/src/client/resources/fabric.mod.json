@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "${mod_name}",
+  "description": "blablabla",
+  "authors": [
+    "${author}"
+  ],
+  "contributors": [
+  ],
+  "contact": {
+    "email": "${email}",
+    "homepage": "${mod_url}",
+    "issues": "${issues_url}",
+    "sources": "${mod_url}"
+  },
+  "license": "${license}",
+  "icon": "${mod_logo}",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "<填入Fabric模组入口点>"
+    ],
+    "modmenu": [
+      "<填入Fabric模组在modmenu下的配置入口点，具体参见modmenu的文档>"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "~1.20",
+    "java": ">=17"
+  },
+  "suggests": {
+    "modmenu": "*",
+    "cloth-config": "*"
+  }
+}
